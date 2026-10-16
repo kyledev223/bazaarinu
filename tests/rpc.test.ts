@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Connection } from "@solana/web3.js";
 import { SendTransactionError } from "@solana/web3.js";
-import { classifyRpcError, createRpc, hostOf, redact, rpcEndpoints, PUBLIC_MAINNET_RPC } from "@/lib/solana/rpc";
+import { classifyRpcError, createRpc, hostOf, invalidRpcEntries, redact, rpcEndpoints, PUBLIC_MAINNET_RPC } from "@/lib/solana/rpc";
 import { AppError } from "@/lib/errors";
 import { classifyChainError, sendFailure, simulationFailure } from "@/lib/solana/txErrors";
 
@@ -31,6 +31,15 @@ describe("rpcEndpoints", () => {
     expect(rpcEndpoints(` ${HELIUS} , ${OTHER},bogus`)).toEqual([HELIUS, OTHER, PUBLIC_MAINNET_RPC]);
     expect(rpcEndpoints("")).toEqual([PUBLIC_MAINNET_RPC]);
     expect(rpcEndpoints(`${PUBLIC_MAINNET_RPC},${HELIUS}`)).toEqual([PUBLIC_MAINNET_RPC, HELIUS]);
+  });
+
+  it("forgives quotes, wss:// URLs and a bare Helius key", () => {
+    expect(rpcEndpoints(`"${HELIUS}"`)[0]).toBe(HELIUS);
+    expect(rpcEndpoints(" 'wss://mainnet.helius-rpc.com/?api-key=abc' ")[0]).toBe("https://mainnet.helius-rpc.com/?api-key=abc");
+    expect(rpcEndpoints("0b1c2d3e-1111-2222-3333-444455556666")[0]).toBe("https://mainnet.helius-rpc.com/?api-key=0b1c2d3e-1111-2222-3333-444455556666");
+    expect(rpcEndpoints("not a url")).toEqual([PUBLIC_MAINNET_RPC]);
+    expect(invalidRpcEntries("not a url")).toBe(1);
+    expect(invalidRpcEntries(`"${HELIUS}"`)).toBe(0);
   });
 });
 

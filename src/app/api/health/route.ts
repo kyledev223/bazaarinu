@@ -5,7 +5,7 @@ import { pumpSdk, pumpSdkVersion } from "@/lib/pump/load";
 import { lastUploads, pinataAuthOk } from "@/lib/pump/metadata";
 import { fetchSolPrice } from "@/lib/price";
 import { geckoReachable } from "@/lib/backtest/history";
-import { hostOf, redact, rpcEndpoints, PUBLIC_MAINNET_RPC } from "@/lib/solana/rpc";
+import { hostOf, invalidRpcEntries, redact, rpcEndpoints, PUBLIC_MAINNET_RPC } from "@/lib/solana/rpc";
 import { jobStates } from "@/lib/tick";
 
 export const runtime = "nodejs";
@@ -91,6 +91,8 @@ export async function GET() {
   else if (!database.ok) hints.push("The database didn't answer. Check DATABASE_URL (use the pooled connection string) and that migrations ran (vercel-build runs prisma migrate deploy).");
   if (!env.SOLANA_RPC_URL) hints.push("SOLANA_RPC_URL is not set, so only the public RPC is used. It rate-limits and often blocks Vercel; add a Helius URL.");
   if (!rpcOk) hints.push("No RPC endpoint answered. Check SOLANA_RPC_URL and your provider's dashboard.");
+  else if (env.SOLANA_RPC_URL && invalidRpcEntries() > 0 && !privateRpcOk)
+    hints.push("SOLANA_RPC_URL is set but isn't a usable URL, so it's ignored. Paste the full https:// RPC URL from Helius (Endpoints → Mainnet), without quotes, then redeploy.");
   else if (env.SOLANA_RPC_URL && !privateRpcOk) hints.push("Your private RPC endpoint failed; only the public fallback works. Check the Helius key and plan limits.");
   if (!sdk.ok) hints.push("The pump SDK didn't load or couldn't build a create instruction. Check next.config.ts serverExternalPackages / outputFileTracingIncludes and the uuid override.");
   if (!uploads.ok && !env.PINATA_JWT)

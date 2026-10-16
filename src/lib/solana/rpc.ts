@@ -13,13 +13,37 @@ const TIMEOUT_MS = 12_000;
 
 export type RpcFailure = "rate-limited" | "forbidden" | "timeout" | "network" | "fatal";
 
+/**
+ * Normalise one SOLANA_RPC_URL entry, forgiving the usual paste mistakes:
+ * surrounding quotes, a wss:// (WebSocket) URL instead of https://, or a bare
+ * Helius API key. Returns null if it still isn't an http(s) URL.
+ */
+export function normaliseRpcEntry(entry: string): string | null {
+  let s = entry.trim().replace(/^["'`]+|["'`]+$/g, "").trim();
+  if (!s) return null;
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)) return `https://mainnet.helius-rpc.com/?api-key=${s}`;
+  if (/^wss?:\/\//i.test(s)) s = s.replace(/^ws(s?):\/\//i, (_m, sec) => `http${sec}://`);
+  if (!/^https?:\/\//i.test(s)) return null;
+  try {
+    new URL(s);
+    return s;
+  } catch {
+    return null;
+  }
+}
+
 export function rpcEndpoints(raw = process.env.SOLANA_RPC_URL ?? ""): string[] {
   const list = raw
     .split(",")
-    .map((s) => s.trim())
-    .filter((s) => /^https?:\/\//i.test(s));
+    .map(normaliseRpcEntry)
+    .filter((s): s is string => !!s);
   if (!list.includes(PUBLIC_MAINNET_RPC)) list.push(PUBLIC_MAINNET_RPC);
   return [...new Set(list)];
+}
+
+/** How many SOLANA_RPC_URL entries couldn't be used at all (for /api/health). */
+export function invalidRpcEntries(raw = process.env.SOLANA_RPC_URL ?? ""): number {
+  return raw.split(",").filter((e) => e.trim() && !normaliseRpcEntry(e)).length;
 }
 
 /** Hostname only. Never log or return a full RPC URL: it usually carries the API key. */
