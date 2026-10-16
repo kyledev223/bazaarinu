@@ -8,29 +8,10 @@ import { useToast } from "@/components/Toast";
 import { EXPLORER, SITE, SOCIAL } from "@/config/site";
 import { api, short } from "@/lib/client/api";
 
-export function useTheme() {
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
-  useEffect(() => {
-    setTheme(document.documentElement.dataset.theme === "light" ? "light" : "dark");
-  }, []);
-  const toggle = useCallback(() => {
-    const next = theme === "dark" ? "light" : "dark";
-    document.documentElement.dataset.theme = next;
-    try {
-      localStorage.setItem("bi.theme", next);
-    } catch {
-      /* private mode */
-    }
-    setTheme(next);
-  }, [theme]);
-  return { theme, toggle };
-}
-
 export function Header({ home = true }: { home?: boolean }) {
   const { publicKey, connecting } = useWallet();
   const { openConnect, signedIn, signIn, signOut } = useUi();
   const toast = useToast();
-  const { theme, toggle } = useTheme();
   const [menu, setMenu] = useState(false);
   const [wmenu, setWmenu] = useState(false);
   const [balance, setBalance] = useState<string>("—");
@@ -104,9 +85,6 @@ export function Header({ home = true }: { home?: boolean }) {
           <a className="menu-social" href={SOCIAL.pump} target="_blank" rel="noopener noreferrer">
             pump.fun ↗
           </a>
-          <button className="iconbtn menu-theme" onClick={toggle} style={{ display: menu ? "block" : "none", textAlign: "left" }}>
-            {theme === "dark" ? "Light theme" : "Dark theme"}
-          </button>
         </nav>
         <div className="right">
           <span className="netpill" title="This site only uses Solana mainnet. Every transaction uses real SOL.">
@@ -115,9 +93,6 @@ export function Header({ home = true }: { home?: boolean }) {
               <span className="long">Solana </span>mainnet
             </span>
           </span>
-          <button className="iconbtn theme-btn" onClick={toggle} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}>
-            {theme === "dark" ? "☀" : "☾"}
-          </button>
           <a className="xbtn social" href={SOCIAL.x} target="_blank" rel="noopener noreferrer" aria-label="Bazaar Inu on X">
             X
           </a>

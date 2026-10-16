@@ -22,15 +22,9 @@ export const viewport: Viewport = {
   themeColor: "#030a14",
 };
 
-// Runs before paint so a saved light theme doesn't flash dark first.
-const THEME_SCRIPT = `try{var t=localStorage.getItem("bi.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${pixel.variable} ${body.variable}`} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
-      </head>
+    <html lang="en" className={`${pixel.variable} ${body.variable}`}>
       <body>
         <Providers>{children}</Providers>
       </body>

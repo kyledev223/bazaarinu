@@ -41,38 +41,6 @@
   color-scheme: dark;
 }
 
-:root[data-theme="light"] {
-  --bg: #f3eee0;
-  --surface: #fbf8ef;
-  --surface-2: #efe8d6;
-  --panel: #e1ebf8;
-  --panel-2: #cfdff3;
-  --line: #c7d1de;
-  --text: #0c1626;
-  --text-strong: #050b16;
-  --muted: #4b5768;
-  --panel-text: #0c1626;
-  --panel-muted: #46536a;
-
-  --accent: #3d8ef0;
-  --accent-text: #1a56b0;
-  --accent-deep: #1a56b0;
-  --accent-awning: #2b78dc;
-  --accent-glow: #3d8ef0;
-  --on-accent: #02060f;
-
-  --ghost: #ffffff;
-  --ghost-deep: #b9c3d1;
-  --warn: #9a5a00;
-  --bad: #c4282a;
-
-  --term-bg: #0b1626;
-  --term-text: #d8deea;
-  --scene-sky: #0a1a33;
-  --scene-ground: #0b1b2f;
-  color-scheme: light;
-}
-
 /* ------------------------------------------------------------------ base */
 *,
 *::before,
@@ -1667,7 +1635,6 @@ dialog.modal::backdrop {
     padding: 3px 6px;
     font-size: 12px;
   }
-  .theme-btn,
   .xbtn.social {
     display: none;
   }

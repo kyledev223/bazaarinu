@@ -175,17 +175,14 @@ test("launch flow: connect, sign in, preview, confirmation with costs, wallet pr
   expect(relayed).toBe(false);
 });
 
-test("light theme toggle and mobile menu", async ({ page, isMobile }) => {
+test("mobile menu, no theme toggle, no horizontal scroll", async ({ page, isMobile }) => {
   await page.goto("/");
+  await expect(page.getByRole("button", { name: /theme/i })).toHaveCount(0);
   if (isMobile) {
     await page.getByRole("button", { name: "Menu" }).click();
     await expect(page.locator("#navLinks")).toHaveClass(/open/);
-    await page.locator("#navLinks").getByRole("button", { name: /theme/ }).click();
-  } else {
-    await page.getByRole("button", { name: /Switch to light theme/ }).click();
+    await expect(page.locator("#navLinks").getByRole("link", { name: /pump\.fun/ })).toBeVisible();
   }
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  // No horizontal scroll at any width.
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });
