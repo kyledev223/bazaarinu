@@ -30,6 +30,8 @@ Put these in a local `.env` for development, and in **Vercel → Project → Set
 |---|---|---|---|---|
 | `DATABASE_URL` | yes | Postgres for the app (pooled connection) | `postgresql://u:p@ep-x-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require` | Neon → Project → Connection Details → **Pooled connection** |
 | `DIRECT_DATABASE_URL` | recommended | Non-pooled connection, used only by `prisma migrate deploy` | same host without `-pooler` | Neon → Connection Details → turn **Connection pooling** off, then copy |
+
+**Connected Neon through Vercel → Storage?** The integration sets `DATABASE_URL` and `DATABASE_URL_UNPOOLED` (plus `POSTGRES_URL*`) for you. The app and migrations pick those up, so you don't need to add the two rows above by hand. If you chose a custom prefix when connecting, rename the variables or reconnect without a prefix.
 | `SOLANA_RPC_URL` | yes in practice | Mainnet RPC list, comma-separated, best first. The public RPC is always added last. | `https://mainnet.helius-rpc.com/?api-key=…` | Helius dashboard → Endpoints → **Mainnet** RPC URL |
 | `SITE_URL` | yes | Public URL, no trailing slash. Used in sign-in messages and metadata `createdOn`. | `https://bazaarinu.xyz` | your domain |
 | `CRON_SECRET` | yes | Protects `/api/cron`. Must be 16+ characters. | 43 random characters | generate (section 3) |

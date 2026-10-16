@@ -1,5 +1,5 @@
 import { Connection, Keypair } from "@solana/web3.js";
-import { db } from "@/lib/db";
+import { databaseUrl, db } from "@/lib/db";
 import { json } from "@/lib/http";
 import { pumpSdk, pumpSdkVersion } from "@/lib/pump/load";
 import { lastUploads, pinataAuthOk } from "@/lib/pump/metadata";
@@ -36,7 +36,7 @@ export async function GET() {
   const endpoints = rpcEndpoints();
 
   const env = {
-    DATABASE_URL: !!process.env.DATABASE_URL,
+    DATABASE_URL: !!databaseUrl(),
     SOLANA_RPC_URL: !!process.env.SOLANA_RPC_URL,
     SITE_URL: !!process.env.SITE_URL,
     CRON_SECRET: (process.env.CRON_SECRET ?? "").length >= 16,
