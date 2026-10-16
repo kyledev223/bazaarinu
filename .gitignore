@@ -1,0 +1,31 @@
+# deps and builds
+node_modules/
+.next/
+out/
+build/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# generated prisma client
+src/generated/
+
+# secrets: never commit these
+.env
+.env.*
+!.env.example
+*.pem
+*keypair*.json
+id.json
+wallet.json
+
+# test output
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# misc
+.DS_Store
+Thumbs.db
+.vercel

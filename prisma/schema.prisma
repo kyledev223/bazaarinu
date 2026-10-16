@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// A signed-in wallet. The cookie holds a random token; only its SHA-256 is stored.
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  wallet    String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([wallet])
+}
+
+/// One-time sign-in challenge.
+model AuthNonce {
+  nonce     String    @id
+  wallet    String
+  message   String
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  @@index([expiresAt])
+}
+
+enum LaunchStatus {
+  prepared
+  built
+  submitted
+  confirmed
+  failed
+  expired
+}
+
+model Launch {
+  id                   String       @id @default(cuid())
+  wallet               String
+  status               LaunchStatus @default(prepared)
+  name                 String
+  symbol               String
+  description          String
+  twitter              String?
+  telegram             String?
+  website              String?
+  imageUri             String
+  metadataUri          String
+  metadataHost         String
+  devBuyLamports       BigInt       @default(0)
+  mint                 String?      @unique
+  signature            String?      @unique
+  lastValidBlockHeight BigInt?
+  reason               String?
+  errorCode            String?
+  ipHash               String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+  submittedAt          DateTime?
+  confirmedAt          DateTime?
+  coin                 Coin?
+
+  @@index([wallet, createdAt])
+  @@index([status, updatedAt])
+}
+
+model Coin {
+  mint                 String    @id
+  launchId             String    @unique
+  launch               Launch    @relation(fields: [launchId], references: [id])
+  creator              String
+  name                 String
+  symbol               String
+  description          String
+  imageUri             String
+  metadataUri          String
+  twitter              String?
+  telegram             String?
+  website              String?
+  signature            String
+  createdAt            DateTime  @default(now())
+  // Live stats, refreshed by the background tick.
+  virtualSolReserves   BigInt?
+  virtualTokenReserves BigInt?
+  realTokenReserves    BigInt?
+  tokenTotalSupply     BigInt?
+  marketCapLamports    BigInt?
+  progressBps          Int?
+  complete             Boolean   @default(false)
+  graduated            Boolean   @default(false)
+  poolAddress          String?
+  poolBaseReserve      BigInt?
+  poolQuoteReserve     BigInt?
+  holders              Int?
+  statsUpdatedAt       DateTime?
+  holdersUpdatedAt     DateTime?
+  tradesCursor         String?
+  tradesUpdatedAt      DateTime?
+  trades               Trade[]
+
+  @@index([creator])
+  @@index([createdAt])
+}
+
+model Trade {
+  signature   String
+  mint        String
+  coin        Coin     @relation(fields: [mint], references: [mint])
+  isBuy       Boolean
+  solLamports BigInt
+  tokenAmount BigInt
+  trader      String
+  venue       String
+  blockTime   DateTime
+
+  @@id([signature, mint])
+  @@index([mint, blockTime])
+  @@index([blockTime])
+}
+
+/// A transaction the server built for a signed-in wallet (buyback, fee claim).
+/// The relay only sends transactions that match an open intent.
+model TxIntent {
+  id          String    @id @default(cuid())
+  kind        String
+  wallet      String
+  mint        String?
+  maxLamports BigInt?
+  meta        Json?
+  status      String    @default("built")
+  signature   String?   @unique
+  reason      String?
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+
+  @@index([wallet, createdAt])
+}
+
+/// Background job bookkeeping and the tick lock.
+model JobState {
+  name           String    @id
+  lockedUntil    DateTime?
+  lastRunAt      DateTime?
+  lastOkAt       DateTime?
+  lastError      String?
+  lastDurationMs Int?
+}
+
+model RateLimit {
+  key         String   @id
+  windowStart DateTime
+  count       Int
+}
+
+model KV {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}

@@ -1,0 +1,14 @@
+# Local Postgres for development only. Production uses a hosted database (see docs/LAUNCH.md).
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: bazaar
+      POSTGRES_PASSWORD: bazaar
+      POSTGRES_DB: bazaar
+    ports:
+      - "5432:5432"
+    volumes:
+      - bazaar-db:/var/lib/postgresql/data
+volumes:
+  bazaar-db:

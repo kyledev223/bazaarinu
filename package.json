@@ -1,0 +1,61 @@
+{
+  "name": "bazaar-inu",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "postinstall": "prisma generate",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "check:require": "node --no-experimental-require-module -e \"require('@pump-fun/pump-sdk');require('@solana/web3.js');console.log('ok: pump-sdk and web3.js load under CommonJS')\"",
+    "smoke:mainnet": "node --experimental-strip-types scripts/smoke-mainnet.ts"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "0.31.1",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "@pump-fun/pump-sdk": "4.1.0",
+    "@pump-fun/pump-swap-sdk": "1.20.0",
+    "@solana/spl-token": "^0.4.13",
+    "@solana/wallet-adapter-base": "0.9.28",
+    "@solana/wallet-adapter-phantom": "0.9.30",
+    "@solana/wallet-adapter-react": "0.15.40",
+    "@solana/wallet-adapter-solflare": "0.6.34",
+    "@solana/web3.js": "1.99.0",
+    "bn.js": "^5.2.2",
+    "bs58": "^6.0.0",
+    "next": "16.4.2",
+    "pg": "^8.16.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "sharp": "0.35.5",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/bn.js": "^5.2.0",
+    "@types/node": "^22.15.0",
+    "@types/pg": "^8.15.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "dotenv": "^17.4.2",
+    "prisma": "7.10.1",
+    "tailwindcss": "4.3.3",
+    "typescript": "^5.9.0",
+    "vitest": "5.0.5"
+  },
+  "overrides": {
+    "rpc-websockets": {
+      "uuid": "^11.1.1"
+    }
+  }
+}
