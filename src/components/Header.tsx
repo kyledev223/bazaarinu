@@ -5,7 +5,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { ShibaFace } from "@/components/mascot/ShibaFace";
 import { useUi } from "@/components/wallet/WalletProviders";
 import { useToast } from "@/components/Toast";
-import { EXPLORER, SITE } from "@/config/site";
+import { EXPLORER, SITE, SOCIAL } from "@/config/site";
 import { api, short } from "@/lib/client/api";
 
 export function useTheme() {
@@ -98,6 +98,12 @@ export function Header({ home = true }: { home?: boolean }) {
               My shops
             </Link>
           )}
+          <a className="menu-social" href={SOCIAL.x} target="_blank" rel="noopener noreferrer">
+            X ↗
+          </a>
+          <a className="menu-social" href={SOCIAL.pump} target="_blank" rel="noopener noreferrer">
+            pump.fun ↗
+          </a>
           <button className="iconbtn menu-theme" onClick={toggle} style={{ display: menu ? "block" : "none", textAlign: "left" }}>
             {theme === "dark" ? "Light theme" : "Dark theme"}
           </button>
@@ -112,11 +118,12 @@ export function Header({ home = true }: { home?: boolean }) {
           <button className="iconbtn theme-btn" onClick={toggle} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}>
             {theme === "dark" ? "☀" : "☾"}
           </button>
-          {SITE.xHandle && (
-            <a className="xbtn" href={`https://x.com/${SITE.xHandle}`} target="_blank" rel="noopener noreferrer" aria-label={`Follow @${SITE.xHandle} on X`}>
-              X<span className="xh"> @{SITE.xHandle}</span>
-            </a>
-          )}
+          <a className="xbtn social" href={SOCIAL.x} target="_blank" rel="noopener noreferrer" aria-label="Bazaar Inu on X">
+            X
+          </a>
+          <a className="xbtn social" href={SOCIAL.pump} target="_blank" rel="noopener noreferrer" aria-label="Bazaar Inu on pump.fun">
+            pump.fun
+          </a>
           <div className="wallet" ref={walletRef}>
             <button
               className="btn"

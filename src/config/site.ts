@@ -9,6 +9,13 @@ export const SITE = {
   telegram: process.env.NEXT_PUBLIC_TELEGRAM_URL || "",
 } as const;
 
+// Header buttons. Set NEXT_PUBLIC_X_URL / NEXT_PUBLIC_PUMP_URL (or the handle / official mint
+// above) in Vercel and redeploy; until then they point at the sites' home pages.
+export const SOCIAL = {
+  x: process.env.NEXT_PUBLIC_X_URL || (SITE.xHandle ? `https://x.com/${SITE.xHandle}` : "https://x.com"),
+  pump: process.env.NEXT_PUBLIC_PUMP_URL || (SITE.officialMint ? `https://pump.fun/coin/${SITE.officialMint}` : "https://pump.fun"),
+} as const;
+
 export const LIMITS = {
   nameMax: 32,
   symbolMax: 10,

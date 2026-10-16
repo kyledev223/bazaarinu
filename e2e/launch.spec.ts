@@ -78,7 +78,12 @@ test("home page sections render with real (empty) data, without page errors", as
   await expect(page.getByText("ANALYSIS ON PAST DATA", { exact: false })).toBeVisible();
   await expect(page.getByRole("heading", { name: "How a launch runs" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Live launch log" })).toBeVisible();
-  await expect(page.getByRole("note", { name: "Risk warning" })).toContainText("Nothing on this site is financial advice");
+  await expect(page.getByRole("note", { name: "Risk warning" })).toHaveCount(0);
+  await expect(page.locator("footer")).toContainText("Not financial advice");
+  if (!(await page.evaluate(() => window.innerWidth < 560))) {
+    await expect(page.getByRole("link", { name: "Bazaar Inu on X" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Bazaar Inu on pump.fun" })).toBeVisible();
+  }
   await page.waitForTimeout(1000);
   expect(errors).toEqual([]);
 });

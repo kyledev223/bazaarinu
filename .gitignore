@@ -1,9 +1,10 @@
-# deps and builds
-node_modules/
-.next/
-out/
-build/
-coverage/
+# deps and builds (anchored to the repo root: an unanchored "build/" also matched
+# src/app/api/*/build/ and kept those routes out of git)
+/node_modules/
+/.next/
+/out/
+/build/
+/coverage/
 *.tsbuildinfo
 next-env.d.ts
 

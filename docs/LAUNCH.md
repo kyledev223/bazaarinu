@@ -42,7 +42,9 @@ Put these in a local `.env` for development, and in **Vercel → Project → Set
 | `COINGECKO_API_KEY` | optional | SOL/USD from CoinGecko (Coinbase and Kraken are keyless fallbacks) | `CG-…` | CoinGecko → Developer Dashboard |
 | `COINGECKO_API_PLAN` | optional | `demo` (default) or `pro` | `demo` | the plan you signed up for |
 | `BIRDEYE_API_KEY` | optional | Backtester fallback when GeckoTerminal fails. GeckoTerminal itself needs no key. | `…` | birdeye.so → Data Services → API key |
-| `NEXT_PUBLIC_X_HANDLE` | optional | Shows the X button in the nav | `bazaarinu` | your X account |
+| `NEXT_PUBLIC_X_URL` | optional | Where the header's X button goes (default `https://x.com`, or `x.com/<handle>` if `NEXT_PUBLIC_X_HANDLE` is set) | `https://x.com/bazaarinu` | your X profile |
+| `NEXT_PUBLIC_PUMP_URL` | optional | Where the header's pump.fun button goes (default `https://pump.fun`, or your coin's page if `NEXT_PUBLIC_OFFICIAL_MINT` is set) | `https://pump.fun/coin/<mint>` | your coin's pump.fun page |
+| `NEXT_PUBLIC_X_HANDLE` | optional | X handle, used for the X button if `NEXT_PUBLIC_X_URL` isn't set | `bazaarinu` | your X account |
 | `NEXT_PUBLIC_OFFICIAL_MINT` | optional | Shown in the Token section once a token exists | mint address | after you launch it |
 | `NEXT_PUBLIC_TELEGRAM_URL` | optional | Reserved for a community link | `https://t.me/…` | your group |
 
