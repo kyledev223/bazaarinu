@@ -1260,10 +1260,24 @@ ol.steps p {
   font-size: 14px;
 }
 
-footer.site-footer .disclaimer {
-  flex-basis: 100%;
-  font-size: 12px;
+footer.site-footer {
+  margin-top: 96px;
+  border-top: 2px solid var(--line);
+  padding: 30px 0 40px;
   color: var(--muted);
+  font-size: 14px;
+}
+footer.site-footer .notes {
+  flex-basis: 100%;
+  border-top: 2px solid var(--line);
+  padding-top: 18px;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+footer.site-footer .notes p {
+  margin: 0 0 8px;
+  max-width: 90ch;
 }
 footer.site-footer .wrap {
   display: flex;

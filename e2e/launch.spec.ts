@@ -78,8 +78,11 @@ test("home page sections render with real (empty) data, without page errors", as
   await expect(page.getByText("ANALYSIS ON PAST DATA", { exact: false })).toBeVisible();
   await expect(page.getByRole("heading", { name: "How a launch runs" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Live launch log" })).toBeVisible();
-  await expect(page.getByRole("note", { name: "Risk warning" })).toHaveCount(0);
-  await expect(page.locator("footer")).toContainText("Not financial advice");
+  await expect(page.getByRole("note", { name: "Risk warning" })).toHaveCount(0); // the old yellow box
+  await expect(page.locator("footer")).toContainText("Nothing on this site is financial advice");
+  await expect(page.locator("footer")).toContainText("complying with the laws where they live");
+  // The footer keeps its spacing and divider.
+  await expect(page.locator("footer.site-footer")).toHaveCSS("margin-top", "96px");
   if (!(await page.evaluate(() => window.innerWidth < 560))) {
     await expect(page.getByRole("link", { name: "Bazaar Inu on X" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Bazaar Inu on pump.fun" })).toBeVisible();

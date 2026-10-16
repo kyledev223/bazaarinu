@@ -211,9 +211,10 @@ export function RiskAndFooter() {
           &nbsp; {SITE.tagline}
         </span>
         <span>Non-custodial. Solana mainnet only. We never ask for a seed phrase.</span>
-        <small className="disclaimer">
-          Not financial advice. Tokens are high-risk and transactions can&apos;t be reversed. Creators are responsible for complying with their local laws. Not affiliated with pump.fun.
-        </small>
+        <div className="notes" role="note" aria-label="Risk and legal notice">
+          <p>Nothing on this site is financial advice. Memecoins and new tokens are extremely risky: most lose all of their value, prices can move to zero in minutes, and every transaction on Solana mainnet uses real SOL and can&apos;t be reversed.</p>
+          <p>Creators are responsible for what they launch and for complying with the laws where they live. Bazaar Inu is an independent interface to pump.fun and isn&apos;t affiliated with or endorsed by pump.fun. The simulator and backtester are educational and don&apos;t predict results.</p>
+        </div>
       </div>
     </footer>
   );
