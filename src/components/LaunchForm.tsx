@@ -33,9 +33,8 @@ interface Estimate {
   balanceLamports: string;
 }
 
-type Step = "signin" | "upload" | "build" | "approve" | "send" | "confirm";
+type Step = "upload" | "build" | "approve" | "send" | "confirm";
 const STEPS: { id: Step; label: string }[] = [
-  { id: "signin", label: "Sign in with your wallet (free)" },
   { id: "upload", label: "Upload image and metadata" },
   { id: "build", label: "Build and dry-run the transaction" },
   { id: "approve", label: "You approve in your wallet" },
@@ -52,7 +51,7 @@ interface Draft {
 
 export function LaunchForm() {
   const { publicKey, signTransaction } = useWallet();
-  const { openConnect, signedIn, signIn } = useUi();
+  const { openConnect } = useUi();
   const toast = useToast();
 
   const [v, setV] = useState({ name: "", symbol: "", description: "", twitter: "", telegram: "", website: "", devBuySol: "0.1" });
@@ -126,14 +125,6 @@ export function LaunchForm() {
     if (!publicKey) return openConnect();
     setBusy(true);
     try {
-      if (!signedIn) {
-        setStep("signin");
-        if (!(await signIn())) {
-          setStep(null);
-          setStatus({ text: "Sign in to continue. It's a free signature, not a transaction.", kind: "err" });
-          return;
-        }
-      }
       const wallet = publicKey.toBase58();
       if (!draft.current || draft.current.key !== formKey) {
         setStep("upload");
@@ -165,7 +156,7 @@ export function LaunchForm() {
     } finally {
       setBusy(false);
     }
-  }, [fields, file, formKey, openConnect, publicKey, signIn, signedIn]);
+  }, [fields, file, formKey, openConnect, publicKey]);
 
   const approve = useCallback(async () => {
     if (!confirm || !draft.current || !publicKey) return;
@@ -333,7 +324,7 @@ export function LaunchForm() {
               )}
             </fieldset>
             <button className="btn" type="submit" disabled={busy} style={{ justifySelf: "start" }} data-testid="review-launch">
-              {busy ? "Working…" : !publicKey ? "Connect wallet to launch" : signedIn ? "Review launch" : "Sign in and review"}
+              {busy ? "Working…" : !publicKey ? "Connect wallet to launch" : "Review launch"}
             </button>
           </form>
 

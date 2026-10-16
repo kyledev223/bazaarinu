@@ -122,7 +122,7 @@ test("form validation shows field errors before anything is sent", async ({ page
   await expect(page.getByText("Add an image for your coin.")).toBeVisible();
 });
 
-test("launch flow: connect, sign in, preview, confirmation with costs, wallet prompt (declined)", async ({ page }) => {
+test("launch flow: connect, preview, confirmation with costs, wallet prompt (declined), no sign-in", async ({ page }) => {
   const kp = Keypair.generate();
   const mintSeen: string[] = [];
   const calls = await mockWallet(page, kp);
@@ -164,7 +164,7 @@ test("launch flow: connect, sign in, preview, confirmation with costs, wallet pr
   await page.getByTestId("review-launch").click();
   const dialog = page.getByTestId("confirm-dialog");
   await expect(dialog).toBeVisible({ timeout: 20_000 });
-  expect(calls).toContain("signMessage"); // real sign-in against the server
+  expect(calls).not.toContain("signMessage"); // connecting is enough: no separate sign-in signature
   expect(prepared).toBe(true);
   await expect(dialog).toContainText("Solana mainnet");
   await expect(dialog).toContainText("can't be undone");

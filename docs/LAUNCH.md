@@ -87,7 +87,7 @@ Background work (finalising launches, market stats, trades, holders, SOL price, 
 
 1. Deploy, then open `https://YOUR_SITE/api/health`. Expect `"ok": true` and an empty `hints` list. Fix each hint first; they're written in plain English.
 2. Use a wallet holding about **0.03–0.05 SOL**. Measured: a create with no dev buy costs about **0.0056 SOL** (rent plus fees), so this leaves plenty of room. **Leave dev buy off.**
-3. On the site: Connect wallet → sign in (a free message) → fill in the name, ticker, image and description → **Review launch**.
+3. On the site: Connect wallet → fill in the name, ticker, image and description → **Review launch**. There is no separate sign-in.
 4. The confirmation dialog shows the network fee, rent and total from a real dry run. Check them, then press **Approve in wallet** and approve.
 5. Wait for "GRAND OPENING". Then confirm the coin:
    - appears on **pump.fun** (the dialog links to `pump.fun/coin/<mint>`)
@@ -110,9 +110,7 @@ Background work (finalising launches, market stats, trades, holders, SOL price, 
 | `tx-failed` | network rejected it / slippage | A send-time rejection, or the price moved past 1% slippage on a buy | Retry; for slippage, try a smaller amount |
 | `relay-rejected` | doesn't match what was prepared | The signed transaction differs from what was built (extra instruction, other mint, other fee payer, a wallet that rewrote it) | The `detail` names the rule. Wallets that add Lighthouse guards or change the priority fee are allowed; anything else isn't. |
 | `validation` | field errors | Form input out of bounds, banned word, bad image | The form shows each field |
-| `rate-limited` | too many requests | Per-wallet/IP limits in `src/lib/ratelimit.ts` | Wait, or raise the limits |
-| `not-signed-in` | sign in first | No session cookie or it expired (14 days) | Sign in again |
-| `wallet-mismatch` | connected wallet isn't the signed-in one | The wallet was switched after sign-in | Sign in with the connected wallet |
+| `rate-limited` | too many requests | Per-IP limits in `src/lib/ratelimit.ts` | Wait, or raise the limits |
 | `upload-failed` | upload failed | Pinata and pump.fun both failed | `PINATA_JWT` valid? `/api/health` → `checks.metadataUpload` |
 | `launch-not-found` / `launch-expired` | start again | The draft is older than 24 h, or belongs to another wallet | Start a new launch; nothing was charged |
 | `already-submitted` | already sent | Double click or a second tab | Check My shops / Solscan |
@@ -158,7 +156,7 @@ npx playwright test                      # e2e (expects the server on :3100)
 npm run check:require                    # CommonJS load test
 ```
 
-Then click through with a real wallet extension in Chrome: Connect, sign in, fill in the form, **Review launch**. With an empty wallet you should get "Not enough SOL". With a funded wallet you'll see the confirmation dialog with dry-run costs; press Cancel there unless you mean to launch.
+Then click through with a real wallet extension in Chrome: Connect, fill in the form, **Review launch**. With an empty wallet you should get "Not enough SOL". With a funded wallet you'll see the confirmation dialog with dry-run costs; press Cancel there unless you mean to launch.
 
 ## How the launch flow is protected
 
@@ -166,7 +164,11 @@ Then click through with a real wallet extension in Chrome: Connect, sign in, fil
 2. **Mint keypair** (browser): `Keypair.generate()`. Only the public key goes to the server.
 3. **Build** (server): `create_v2` from `@pump-fun/pump-sdk` 4.1.0, or `createV2AndBuyInstructions` with a dev buy. The legacy 16-account `buy` keeps create + buy within one legacy transaction; `buy_v2` measured 1462 bytes against the 1232 limit. Compute budget is sized from a simulation, with a fresh blockhash and the user as fee payer. Insufficient funds are caught here.
 4. **Sign** (browser): wallet `signTransaction` first, then `partialSign(mint)`.
-5. **Relay** (server): `checkLaunchTransaction` accepts only ComputeBudget (capped), exactly one `create_v2` with this mint, name, ticker, URI and the wallet as creator, and (only with a dev buy) the wallet's Token-2022 account plus one `buy` capped at the dev-buy amount. The fee payer must be the session wallet and every signature must verify. Then `sendRawTransaction`.
+5. **Relay** (server): `checkLaunchTransaction` accepts only ComputeBudget (capped), exactly one `create_v2` with this mint, name, ticker, URI and the wallet as creator, and (only with a dev buy) the wallet's Token-2022 account plus one `buy` capped at the dev-buy amount. The fee payer must be the launch's wallet and every signature must verify. Then `sendRawTransaction`.
 6. **Finalize** (idempotent): signature status → bonding-curve PDA exists with the wallet as creator → the coin row is created in a DB transaction that first claims the launch.
 
 Buybacks and fee claims follow the same build → confirm → sign → checked relay pattern, with their own checkers (`checkBuybackTransaction`, `checkClaimTransaction`).
+
+## Why there's no sign-in
+
+Connecting a wallet is all a visitor does before launching. The browser sends its wallet address with each request, and the server doesn't trust that on its own: every action that moves SOL (launch, buyback, fee claim) is a transaction the wallet itself must sign, and the relay only forwards it if the fee payer is that wallet and every signature verifies. Someone who types in another person's address can build an unsigned transaction for them, but can never send one. Rate limits are per IP for the same reason.

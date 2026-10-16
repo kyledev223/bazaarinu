@@ -115,9 +115,9 @@ export async function relayIntent(intentId: string, signedB64: unknown, wallet: 
   return { signature };
 }
 
-export async function intentStatus(intentId: string, wallet: string) {
+export async function intentStatus(intentId: string) {
   const intent = await db().txIntent.findUnique({ where: { id: intentId } });
-  if (!intent || intent.wallet !== wallet) throw new AppError("bad-request", { status: 404, message: "Not found." });
+  if (!intent) throw new AppError("bad-request", { status: 404, message: "Not found." });
   if (intent.status === "submitted" && intent.signature) {
     const sig = intent.signature;
     const s = (await withRpc("intent:status", (c) => c.getSignatureStatuses([sig], { searchTransactionHistory: true }))).value[0];
@@ -136,7 +136,7 @@ export async function intentStatus(intentId: string, wallet: string) {
 /** Tick job: settle submitted intents whose browser went away. */
 export async function finalizeIntents(): Promise<number> {
   const pending = await db().txIntent.findMany({ where: { status: "submitted" }, take: 50, orderBy: { createdAt: "asc" } });
-  for (const p of pending) await intentStatus(p.id, p.wallet).catch(() => {});
+  for (const p of pending) await intentStatus(p.id).catch(() => {});
   await db().txIntent.updateMany({ where: { status: "built", expiresAt: { lt: new Date(Date.now() - 3600_000) } }, data: { status: "expired" } });
   return pending.length;
 }

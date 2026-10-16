@@ -4,11 +4,9 @@ import { AppError } from "@/lib/errors";
 
 export const RATE_LIMITS = {
   // Prepare uploads an image and pins metadata: the expensive one.
-  prepareWallet: { limit: 6, windowSec: 3600 },
   prepareIp: { limit: 12, windowSec: 3600 },
   build: { limit: 40, windowSec: 600 },
   relay: { limit: 30, windowSec: 600 },
-  nonce: { limit: 20, windowSec: 600 },
   balance: { limit: 60, windowSec: 60 },
   backtest: { limit: 30, windowSec: 60 },
 } as const;

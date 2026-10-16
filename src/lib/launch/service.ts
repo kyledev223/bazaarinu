@@ -33,7 +33,7 @@ export async function prepareLaunch(form: FormData, wallet: string, ipHash: stri
     throw new AppError("validation", { fields: errs });
   }
 
-  await rateLimit("prepareWallet", wallet);
+  // Per IP only: the wallet isn't proven until it signs the launch transaction.
   await rateLimit("prepareIp", ipHash);
 
   const img = await normaliseImage(new Uint8Array(await (image as Blob).arrayBuffer()));

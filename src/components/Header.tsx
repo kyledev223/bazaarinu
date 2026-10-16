@@ -10,7 +10,7 @@ import { api, short } from "@/lib/client/api";
 
 export function Header({ home = true }: { home?: boolean }) {
   const { publicKey, connecting } = useWallet();
-  const { openConnect, signedIn, signIn, signOut } = useUi();
+  const { openConnect, disconnectWallet } = useUi();
   const toast = useToast();
   const [menu, setMenu] = useState(false);
   const [wmenu, setWmenu] = useState(false);
@@ -74,7 +74,7 @@ export function Header({ home = true }: { home?: boolean }) {
               {l.label}
             </a>
           ))}
-          {signedIn && (
+          {address && (
             <Link href="/shops" onClick={() => setMenu(false)}>
               My shops
             </Link>
@@ -119,18 +119,10 @@ export function Header({ home = true }: { home?: boolean }) {
                 <div className="bal">
                   Balance<strong>{balance}</strong>
                   <span>{short(address)}</span>
-                  <span style={{ display: "block", marginTop: 4 }}>{signedIn ? "Signed in" : "Not signed in"}</span>
                 </div>
-                {!signedIn && (
-                  <button role="menuitem" onClick={() => signIn()}>
-                    Sign in (free signature)
-                  </button>
-                )}
-                {signedIn && (
-                  <Link role="menuitem" href="/shops">
-                    My shops
-                  </Link>
-                )}
+                <Link role="menuitem" href="/shops">
+                  My shops
+                </Link>
                 <button
                   role="menuitem"
                   onClick={async () => {
@@ -150,7 +142,7 @@ export function Header({ home = true }: { home?: boolean }) {
                 <button
                   role="menuitem"
                   onClick={async () => {
-                    await signOut();
+                    await disconnectWallet();
                     toast("Wallet disconnected");
                   }}
                 >

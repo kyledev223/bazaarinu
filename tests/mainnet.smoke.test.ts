@@ -4,8 +4,6 @@
 import "dotenv/config";
 import { describe, expect, it } from "vitest";
 import { Keypair, PublicKey, Transaction } from "@solana/web3.js";
-import bs58 from "bs58";
-import nacl from "tweetnacl";
 import sharp from "sharp";
 import { buildAndSimulate } from "@/lib/pump/tx";
 import { buybackInstructions, claimInstructions, launchInstructions, readCurve } from "@/lib/pump/builders";
@@ -47,29 +45,9 @@ class Jar {
 }
 
 describe.skipIf(!RUN)("mainnet smoke (no transactions are sent)", () => {
-  it("HTTP flow from an empty wallet: sign-in → prepare/upload → build ends with not-enough-SOL", async () => {
+  it("HTTP flow from an empty wallet: prepare/upload → build ends with not-enough-SOL (no sign-in)", async () => {
     const wallet = Keypair.generate();
     const jar = new Jar();
-    const n = await jar.fetch("/api/auth/nonce", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ wallet: wallet.publicKey.toBase58() }) });
-    expect(n.status).toBe(200);
-    const sig = nacl.sign.detached(new TextEncoder().encode(n.body.message), wallet.secretKey);
-    const v = await jar.fetch("/api/auth/verify", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ wallet: wallet.publicKey.toBase58(), nonce: n.body.nonce, signature: bs58.encode(sig) }),
-    });
-    expect(v.status).toBe(200);
-    expect(jar.cookie).toContain("bi_session=");
-
-    // A wrong signature is refused.
-    const n2 = await jar.fetch("/api/auth/nonce", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ wallet: wallet.publicKey.toBase58() }) });
-    const bad = await new Jar().fetch("/api/auth/verify", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ wallet: wallet.publicKey.toBase58(), nonce: n2.body.nonce, signature: bs58.encode(nacl.sign.detached(new TextEncoder().encode("other"), wallet.secretKey)) }),
-    });
-    expect(bad.status).toBe(401);
-
     const png = await sharp({ create: { width: 256, height: 256, channels: 4, background: { r: 75, g: 168, b: 255, alpha: 1 } } }).png().toBuffer();
     const fd = new FormData();
     fd.append("name", "Bazaar Inu Smoke Test");

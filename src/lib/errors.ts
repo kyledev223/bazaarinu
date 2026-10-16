@@ -12,8 +12,6 @@ export const ERROR_MESSAGES = {
   "relay-rejected": "This transaction doesn't match what was prepared, so it wasn't sent.",
   "validation": "Some fields need fixing.",
   "rate-limited": "Too many requests. Wait a minute and try again.",
-  "not-signed-in": "Sign in with your wallet first. It's a free signature, not a transaction.",
-  "wallet-mismatch": "The connected wallet isn't the one that's signed in. Sign in again with this wallet.",
   "upload-failed": "Uploading the image and metadata failed. Try again in a moment.",
   "launch-not-found": "That launch wasn't found.",
   "launch-expired": "This launch draft expired. Start again; nothing was charged.",
@@ -61,9 +59,6 @@ function defaultStatus(code: ErrorCode): number {
     case "launch-expired":
     case "already-submitted":
       return 400;
-    case "not-signed-in":
-    case "wallet-mismatch":
-      return 401;
     case "not-creator":
       return 403;
     case "launch-not-found":

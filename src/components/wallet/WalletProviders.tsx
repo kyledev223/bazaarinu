@@ -4,32 +4,25 @@ import { WalletProvider, useWallet } from "@solana/wallet-adapter-react";
 import { WalletNotReadyError, WalletReadyState, type WalletError, type WalletName } from "@solana/wallet-adapter-base";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
 import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
-import bs58 from "bs58";
 import { OkxWalletAdapter } from "@/components/wallet/OkxAdapter";
 import { WALLET_LINKS } from "@/config/site";
-import { api, ApiError } from "@/lib/client/api";
 import { useToast } from "@/components/Toast";
 
 // Wallets offered in the picker. Backpack (and others) register through the
 // Wallet Standard and show up automatically when installed.
 export const OFFERED = ["Phantom", "Solflare", "Backpack", "OKX Wallet"] as const;
 
+// No separate sign-in: connecting is enough. Every action that moves SOL is a
+// transaction the wallet signs, and the server relays it only if that signature
+// is from the wallet the action was built for.
 interface UiCtx {
   openConnect: () => void;
-  sessionWallet: string | null;
-  signedIn: boolean; // signed in AND the connected wallet is the session wallet
-  signIn: () => Promise<boolean>;
-  signOut: () => Promise<void>;
-  sessionLoading: boolean;
+  disconnectWallet: () => Promise<void>;
 }
 
 const Ctx = createContext<UiCtx>({
   openConnect: () => {},
-  sessionWallet: null,
-  signedIn: false,
-  signIn: async () => false,
-  signOut: async () => {},
-  sessionLoading: true,
+  disconnectWallet: async () => {},
 });
 
 export const useUi = () => useContext(Ctx);
@@ -51,18 +44,9 @@ export function WalletProviders({ children }: { children: React.ReactNode }) {
 
 function UiProvider({ children, help, setHelp }: { children: React.ReactNode; help: string | null; setHelp: (s: string | null) => void }) {
   const toast = useToast();
-  const { publicKey, signMessage, disconnect, wallets, select, wallet, connect, connected, connecting } = useWallet();
-  const [sessionWallet, setSessionWallet] = useState<string | null>(null);
-  const [sessionLoading, setSessionLoading] = useState(true);
+  const { disconnect, wallets, select, wallet, connect, connected, connecting } = useWallet();
   const [pickerOpen, setPickerOpen] = useState(false);
   const pending = useRef<string | null>(null);
-
-  useEffect(() => {
-    api<{ wallet: string | null }>("/api/auth/me")
-      .then((r) => setSessionWallet(r.wallet))
-      .catch(() => setSessionWallet(null))
-      .finally(() => setSessionLoading(false));
-  }, []);
 
   // After select(), connect once the adapter is the selected one.
   useEffect(() => {
@@ -89,47 +73,11 @@ function UiProvider({ children, help, setHelp }: { children: React.ReactNode; he
     [wallets, select, setHelp],
   );
 
-  const signIn = useCallback(async () => {
-    if (!publicKey) {
-      setPickerOpen(true);
-      return false;
-    }
-    if (!signMessage) {
-      toast("This wallet can't sign messages. Try Phantom, Solflare, Backpack or OKX.", true);
-      return false;
-    }
-    const wallet58 = publicKey.toBase58();
-    try {
-      const { nonce, message } = await api<{ nonce: string; message: string }>("/api/auth/nonce", { method: "POST", json: { wallet: wallet58 } });
-      const sig = await signMessage(new TextEncoder().encode(message));
-      await api("/api/auth/verify", { method: "POST", json: { wallet: wallet58, nonce, signature: bs58.encode(sig) } });
-      setSessionWallet(wallet58);
-      toast("Signed in. No transaction was sent.");
-      return true;
-    } catch (e) {
-      if (e instanceof ApiError) toast(e.message, true);
-      else toast(/reject|denied|cancel/i.test(String((e as Error)?.message)) ? "Sign-in was cancelled in your wallet." : "Sign-in failed. Unlock your wallet and try again.", true);
-      return false;
-    }
-  }, [publicKey, signMessage, toast]);
-
-  const signOut = useCallback(async () => {
-    await api("/api/auth/logout", { method: "POST" }).catch(() => {});
-    setSessionWallet(null);
+  const disconnectWallet = useCallback(async () => {
     await disconnect().catch(() => {});
   }, [disconnect]);
 
-  const value = useMemo<UiCtx>(
-    () => ({
-      openConnect: () => setPickerOpen(true),
-      sessionWallet,
-      signedIn: !!publicKey && sessionWallet === publicKey.toBase58(),
-      signIn,
-      signOut,
-      sessionLoading,
-    }),
-    [sessionWallet, publicKey, signIn, signOut, sessionLoading],
-  );
+  const value = useMemo<UiCtx>(() => ({ openConnect: () => setPickerOpen(true), disconnectWallet }), [disconnectWallet]);
 
   return (
     <Ctx.Provider value={value}>

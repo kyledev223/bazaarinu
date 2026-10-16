@@ -36,7 +36,8 @@ interface Fees {
 
 export function ShopsDashboard() {
   const { publicKey, signTransaction } = useWallet();
-  const { openConnect, signedIn, signIn, sessionLoading } = useUi();
+  const { openConnect } = useUi();
+  const wallet = publicKey?.toBase58() ?? null;
   const toast = useToast();
   const [coins, setCoins] = useState<CoinView[] | null>(null);
   const [launches, setLaunches] = useState<{ id: string; name: string; symbol: string; status: string; reason: string | null }[]>([]);
@@ -49,21 +50,21 @@ export function ShopsDashboard() {
   const dlg = useRef<HTMLDialogElement>(null);
 
   const load = useCallback(async () => {
-    if (!signedIn) return;
+    if (!wallet) return;
     try {
-      const r = await api<{ coins: CoinView[]; launches: typeof launches }>("/api/my/coins");
+      const r = await api<{ coins: CoinView[]; launches: typeof launches }>(`/api/my/coins?wallet=${wallet}`);
       setCoins(r.coins);
       setLaunches(r.launches);
     } catch (e) {
       setMsg({ text: (e as Error).message, bad: true });
     }
     try {
-      setFees(await api<Fees>("/api/my/fees"));
+      setFees(await api<Fees>(`/api/my/fees?wallet=${wallet}`));
       setFeesError(null);
     } catch (e) {
       setFeesError(e instanceof ApiError ? `${e.message} (${e.code})` : String(e));
     }
-  }, [signedIn]);
+  }, [wallet]);
 
   useEffect(() => {
     load();
@@ -160,7 +161,7 @@ export function ShopsDashboard() {
     }
   };
 
-  if (!publicKey || !signedIn) {
+  if (!publicKey) {
     return (
       <section className="block">
         <div className="wrap">
@@ -168,10 +169,10 @@ export function ShopsDashboard() {
           <div className="empty-lot" style={{ border: "2px solid var(--line)", padding: 24 }}>
             <ShibaFace mood="sleeping" size={100} />
             <div>
-              <b>{!publicKey ? "Connect your wallet" : "Sign in to see your shops"}</b>
-              <p>Your shops, live stats, creator fees and buybacks live here. Signing in is a free message signature, not a transaction.</p>
-              <button className="btn sm" style={{ marginTop: 12 }} disabled={sessionLoading} onClick={() => (!publicKey ? openConnect() : signIn())}>
-                {!publicKey ? "Connect wallet" : "Sign in"}
+              <b>Connect your wallet</b>
+              <p>Your shops, live stats, creator fees and buybacks live here.</p>
+              <button className="btn sm" style={{ marginTop: 12 }} onClick={openConnect}>
+                Connect wallet
               </button>
             </div>
           </div>

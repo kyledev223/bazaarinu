@@ -1,7 +1,7 @@
-import { requireSession } from "@/lib/auth";
 import { AppError } from "@/lib/errors";
 import { assertSameOrigin, clientIp, hashIp, json, route } from "@/lib/http";
 import { prepareLaunch } from "@/lib/launch/service";
+import { walletAddress } from "@/lib/wallet";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,6 +14,5 @@ export const POST = route(async (req: Request) => {
   const form = await req.formData().catch(() => {
     throw new AppError("bad-request", { message: "Send the form as multipart/form-data." });
   });
-  const session = await requireSession(String(form.get("wallet") ?? "") || null);
-  return json(await prepareLaunch(form, session.wallet, hashIp(clientIp(req))));
+  return json(await prepareLaunch(form, walletAddress(form.get("wallet")), hashIp(clientIp(req))));
 });

@@ -1,4 +1,4 @@
-import { parseWallet } from "@/lib/auth";
+import { parseWallet } from "@/lib/wallet";
 import { clientIp, hashIp, json, route } from "@/lib/http";
 import { rateLimit } from "@/lib/ratelimit";
 import { withRpc } from "@/lib/solana/rpc";
