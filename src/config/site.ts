@@ -5,7 +5,7 @@ export const SITE = {
   tagline: "Launch a coin. Open a stall.",
   // Set these once the official accounts / token exist (see docs/LAUNCH.md, "Places to customise").
   xHandle: process.env.NEXT_PUBLIC_X_HANDLE || "bazaarinufun",
-  officialMint: process.env.NEXT_PUBLIC_OFFICIAL_MINT || "",
+  officialMint: process.env.NEXT_PUBLIC_OFFICIAL_MINT || "EsSfkxaEN65te5ZXYMigisMguJcTvsdXyDoeXbygpump",
   telegram: process.env.NEXT_PUBLIC_TELEGRAM_URL || "",
 } as const;
 
