@@ -1,7 +1,7 @@
 // Background work behind one DB lock. Triggered by /api/cron (Vercel cron or
 // any external pinger), by after() on page loads, and by status polls. Each
 // job records when it last ran and whether it worked, for /api/health.
-import { db } from "@/lib/db";
+import { db, table } from "@/lib/db";
 import { expireStaleDrafts, finalizeLaunch } from "@/lib/launch/service";
 import { refreshCoinStats, refreshHolders, refreshTrades } from "@/lib/market";
 import { refreshSolPrice } from "@/lib/price";
@@ -15,11 +15,13 @@ const MIN_INTERVAL_MS = 45_000;
 export const JOBS = ["finalize", "intents", "price", "stats", "trades", "holders", "cleanup"] as const;
 export type JobName = (typeof JOBS)[number];
 
+// Prisma DateTime columns are UTC timestamps without a zone, so raw SQL compares against now() in UTC
+// explicitly; otherwise a database whose session TimeZone isn't UTC would skew the lock.
 async function acquire(): Promise<boolean> {
-  await db().$executeRaw`INSERT INTO "JobState" ("name") VALUES (${LOCK}) ON CONFLICT ("name") DO NOTHING`;
+  await db().$executeRaw`INSERT INTO ${table("JobState")} ("name") VALUES (${LOCK}) ON CONFLICT ("name") DO NOTHING`;
   const rows = await db().$queryRaw<{ name: string }[]>`
-    UPDATE "JobState" SET "lockedUntil" = now() + make_interval(secs => ${LOCK_SECONDS})
-    WHERE "name" = ${LOCK} AND ("lockedUntil" IS NULL OR "lockedUntil" < now())
+    UPDATE ${table("JobState")} SET "lockedUntil" = (now() AT TIME ZONE 'utc') + make_interval(secs => ${LOCK_SECONDS})
+    WHERE "name" = ${LOCK} AND ("lockedUntil" IS NULL OR "lockedUntil" < (now() AT TIME ZONE 'utc'))
     RETURNING "name"`;
   return rows.length === 1;
 }

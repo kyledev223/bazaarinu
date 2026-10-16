@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
+import { DB_SCHEMA } from "./src/config/db-schema";
 
 // Migrations prefer a direct (non-pooled) connection. These are the names our docs use,
 // plus the ones the Vercel ↔ Neon integration sets automatically.
@@ -21,8 +22,15 @@ if (!url && needsDb) {
   );
 }
 
+/** Point migrations at Bazaar Inu's own schema (created on first deploy). */
+function withSchema(u: string): string {
+  const parsed = new URL(u);
+  parsed.searchParams.set("schema", DB_SCHEMA);
+  return parsed.toString();
+}
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: { path: "prisma/migrations" },
-  datasource: { url: url ?? "postgresql://placeholder:placeholder@localhost:5432/placeholder" },
+  datasource: { url: withSchema(url ?? "postgresql://placeholder:placeholder@localhost:5432/placeholder") },
 });

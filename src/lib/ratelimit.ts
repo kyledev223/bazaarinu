@@ -1,5 +1,5 @@
 // Fixed-window rate limits stored in Postgres, so they hold across serverless instances.
-import { db } from "@/lib/db";
+import { db, table } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 
 export const RATE_LIMITS = {
@@ -20,11 +20,11 @@ export async function rateLimit(name: LimitName, subject: string): Promise<void>
   const { limit, windowSec } = RATE_LIMITS[name];
   const key = `${name}:${subject}`;
   const rows = await db().$queryRaw<{ count: number }[]>`
-    INSERT INTO "RateLimit" ("key", "windowStart", "count")
-    VALUES (${key}, now(), 1)
+    INSERT INTO ${table("RateLimit")} ("key", "windowStart", "count")
+    VALUES (${key}, (now() AT TIME ZONE 'utc'), 1)
     ON CONFLICT ("key") DO UPDATE SET
-      "count" = CASE WHEN "RateLimit"."windowStart" < now() - make_interval(secs => ${windowSec}) THEN 1 ELSE "RateLimit"."count" + 1 END,
-      "windowStart" = CASE WHEN "RateLimit"."windowStart" < now() - make_interval(secs => ${windowSec}) THEN now() ELSE "RateLimit"."windowStart" END
+      "count" = CASE WHEN "RateLimit"."windowStart" < (now() AT TIME ZONE 'utc') - make_interval(secs => ${windowSec}) THEN 1 ELSE "RateLimit"."count" + 1 END,
+      "windowStart" = CASE WHEN "RateLimit"."windowStart" < (now() AT TIME ZONE 'utc') - make_interval(secs => ${windowSec}) THEN (now() AT TIME ZONE 'utc') ELSE "RateLimit"."windowStart" END
     RETURNING "count"`;
   if ((rows[0]?.count ?? 0) > limit) {
     throw new AppError("rate-limited", { detail: `${name} limit is ${limit} per ${Math.round(windowSec / 60)} min` });
