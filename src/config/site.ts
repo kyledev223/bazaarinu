@@ -4,7 +4,7 @@ export const SITE = {
   short: "INU",
   tagline: "Launch a coin. Open a stall.",
   // Set these once the official accounts / token exist (see docs/LAUNCH.md, "Places to customise").
-  xHandle: process.env.NEXT_PUBLIC_X_HANDLE || "",
+  xHandle: process.env.NEXT_PUBLIC_X_HANDLE || "bazaarinufun",
   officialMint: process.env.NEXT_PUBLIC_OFFICIAL_MINT || "",
   telegram: process.env.NEXT_PUBLIC_TELEGRAM_URL || "",
 } as const;
